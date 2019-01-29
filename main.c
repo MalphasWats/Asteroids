@@ -1,6 +1,7 @@
 #include <avr/io.h>
 
 #include "main.h"
+#include "ASCII.h"
 
 unsigned long t = 0;
 unsigned long btn_timer = 0;
@@ -11,8 +12,8 @@ int ship_y=32;
 
 bool ship_alive = TRUE;
 
-int x_vectors[] = {0, 1, 2, 4, 4, 4, 2, 1, 0, -1, -2, -4, -4, -4, -2, -1};
-int y_vectors[] = {-4, -4, -2, -1, 0, 1, 2, 4, 4, 4, 2, 1, 0, -1, -2, -4};
+int x_vectors[] = {0, 1, 2, 3, 3, 3, 2, 1, 0, -1, -2, -3, -3, -3, -2, -1};
+int y_vectors[] = {-3, -3, -2, -1, 0, 1, 2, 3, 3, 3, 2, 1, 0, -1, -2, -3};
 
 int a_vectors[] = {-1, 1, 0, -1, 1, 2, -1, -2};
 
@@ -24,6 +25,13 @@ unsigned long action_timer = 0;
 
 Sprite asteroids[MAX_ASTEROIDS];
 Sprite torpedos[MAX_TORPEDOS];
+
+Sprite d0 = {.x=9*8, .y=4*8, .tile=0};
+Sprite d1 = {.x=8*8, .y=4*8, .tile=0};
+Sprite d2 = {.x=7*8, .y=4*8, .tile=0};
+Sprite d3 = {.x=6*8, .y=4*8, .tile=0};
+
+word spawn_timer = 0;
 
 int main (void) 
 {    
@@ -58,18 +66,6 @@ int main (void)
         .tile = LARGE1,
     };
     
-    asteroids[1] = (Sprite){
-        .x = rng() & 63,//19,
-        .y = rng() & 127, //22,
-        
-        .vx = 1,
-        .vy = -1,
-        
-        .size = 3*8,
-        
-        .tile = LARGE2,
-    };
-    
     for(ever)
     {
         t = millis();
@@ -101,7 +97,7 @@ int main (void)
             }
         }
         
-        if (action_timer <= t)
+        if (action_timer <= t && ship_alive)
         {   
             if(buttons & _A)
             {
@@ -155,6 +151,29 @@ int main (void)
         {
             ship_x += vx;
             ship_y += vy;
+            
+            if (spawn_timer <= t)
+            {
+                for (byte a=0; a<MAX_ASTEROIDS ; a++)
+                {
+                    if (asteroids[a].size == 0)
+                    {
+                        asteroids[a] = (Sprite){
+                            .x = rng() & 63,//19,
+                            .y = rng() & 127, //22,
+                            
+                            .vx = a_vectors[rng() & 7],
+                            .vy = a_vectors[rng() & 7],
+                            
+                            .size = 3*8,
+                            
+                            .tile = LARGE2,
+                        };
+                        break;
+                    }
+                }
+                spawn_timer = t+10000;
+            }
             
             for (byte i=0 ; i<MAX_ASTEROIDS ; i++)
             {
@@ -277,6 +296,8 @@ int main (void)
                             }
                         }
                         
+                        score += 3;
+                        
                     }
                     else if (asteroids[c].size == 2*8)
                     {
@@ -320,10 +341,14 @@ int main (void)
                                 break;
                             }
                         }
+                        
+                        score += 4;
                     }
                     else 
                     {
                         asteroids[c].size = 0;
+                        
+                        score += 6;
                     }
                 }
             }
@@ -369,9 +394,24 @@ int main (void)
                                                 .size = 8,
                                                 .tile = DEBRIS+3,
                                             };
+                                            
+                d0.tile = score % 10;
+                score /= 10;
+                d1.tile = score % 10;
+                score /= 10;
+                d2.tile = score % 10;
+                score /= 10;
+                d3.tile = score % 10;
             }
             
             draw_tile(&SHIP[rotation*8], &SHIP_MASKS[rotation*8], ship_x, ship_y);
+        }
+        else 
+        {
+            draw_tile(&DIGITS[d0.tile*8], &CHARACTER_MASK[0], d0.x, d0.y);
+            draw_tile(&DIGITS[d1.tile*8], &CHARACTER_MASK[0], d1.x, d1.y);
+            draw_tile(&DIGITS[d2.tile*8], &CHARACTER_MASK[0], d2.x, d2.y);
+            draw_tile(&DIGITS[d3.tile*8], &CHARACTER_MASK[0], d3.x, d3.y);
         }
         
         

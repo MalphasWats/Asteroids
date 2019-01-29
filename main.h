@@ -3,7 +3,7 @@
 
 #include "SPIKE.h"
 
-#define MAX_VELOCITY 8
+#define MAX_VELOCITY 6
 #define UPDATE_DELAY 60
 #define ACTION_DELAY 180
 
@@ -173,6 +173,10 @@ typedef struct Sprite {
     
     word tile;
 } Sprite;
+
+static const __flash byte CHARACTER_MASK[] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
 
 byte collide_with_asteroid(int x, int y);
 void draw_asteroid(Sprite *a);
