@@ -6,8 +6,8 @@
 
 volatile unsigned long _millis = 0;
 
-word rngSEED = 5;
-word rng( void )
+byte rngSEED = 5;
+byte rng( void )
 {
     rngSEED = (rngSEED*rngA +rngC) % rngM;
     return rngSEED;

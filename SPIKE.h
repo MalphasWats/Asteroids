@@ -99,10 +99,10 @@ static const __flash byte LOGO[] = {
 #define LOGO_WIDTH 96
 #define LOGO_HEIGHT 24/8
 
-#define rngM 7919
-#define rngA 17
+#define rngM 251
+#define rngA 11
 #define rngC 3
-word rng( void );
+byte rng( void );
 
 void delay_ms( word ms );
 
