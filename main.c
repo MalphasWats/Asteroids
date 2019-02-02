@@ -55,11 +55,11 @@ int main (void)
     word score = 0;
     
     asteroids[0] = (Sprite){
-        .x = rng() & 63,//19,
-        .y = rng() & 127, //22,
+        .x = rng() & 127,//19,
+        .y = 0, //22,
         
-        .vx = -1,
-        .vy = 2,
+        .vx = 1,
+        .vy = 1,
         
         .size = 3*8,
         
@@ -159,8 +159,8 @@ int main (void)
                     if (asteroids[a].size == 0)
                     {
                         asteroids[a] = (Sprite){
-                            .x = rng() & 63,//19,
-                            .y = rng() & 127, //22,
+                            .x = rng() & 127,//19,
+                            .y = rng() & 63, //22,
                             
                             .vx = a_vectors[rng() & 7],
                             .vy = a_vectors[rng() & 7],
@@ -357,7 +357,7 @@ int main (void)
         
         if (ship_alive)
         {
-            c = collide_with_asteroid(ship_x, ship_y);
+            c = collide_with_asteroid(ship_x+4, ship_y+4);
             if (c < MAX_ASTEROIDS)
             {
                 ship_alive = FALSE;
@@ -425,10 +425,10 @@ byte collide_with_asteroid(int x, int y)
     {
         if (asteroids[i].size > 0)
         {
-            if (x > asteroids[i].x &&
-                x < asteroids[i].x+asteroids[i].size &&
-                y > asteroids[i].y &&
-                y < asteroids[i].y+asteroids[i].size)
+            if (x+1 > asteroids[i].x &&
+                x-1 < asteroids[i].x+asteroids[i].size &&
+                y+1 > asteroids[i].y &&
+                y-1 < asteroids[i].y+asteroids[i].size)
             {
                 return i;
             }
