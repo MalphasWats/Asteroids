@@ -3,8 +3,8 @@
 #include "main.h"
 #include "ASCII.h"
 
-unsigned long t = 0;
-unsigned long btn_timer = 0;
+dword t = 0;
+dword btn_timer = 0;
 
 byte rotation=0;
 int ship_x=64;
@@ -20,8 +20,8 @@ int a_vectors[] = {-1, 1, 0, -1, 1, 2, -1, -2};
 int vx=0;
 int vy=0;
 
-unsigned long update_timer = 0;
-unsigned long action_timer = 0;
+dword update_timer = 0;
+dword action_timer = 0;
 
 Sprite asteroids[MAX_ASTEROIDS];
 Sprite torpedos[MAX_TORPEDOS];
@@ -31,26 +31,68 @@ Sprite d1 = {.x=8*8, .y=4*8, .tile=0};
 Sprite d2 = {.x=7*8, .y=4*8, .tile=0};
 Sprite d3 = {.x=6*8, .y=4*8, .tile=0};
 
-word spawn_timer = 0;
+dword spawn_timer = 0;
+dword restart_timer = 0;
+
+byte buttons;
 
 int main (void) 
 {    
     initialise();
-    // display logo
-    for(byte y=0 ; y<LOGO_HEIGHT ; y++)
-        for(byte x=0 ; x<LOGO_WIDTH ; x++)
-            buffer[(y+2)*SCREEN_WIDTH + (x+16)] = LOGO[y*LOGO_WIDTH + x];
-            draw();
-            
-    note(_A4, 90);
-    delay_ms(180);
-    note(_C5, 60);
-    delay_ms(120);
-    note(_E5, 60);
     
-    delay_ms(SPLASH_DELAY);
+    byte debounce = 0;
+    bool button_down = FALSE;
     
-    byte buttons;
+    for(ever)
+    {
+        t = millis();
+        
+        for (word i=0 ; i<(SCREEN_WIDTH*SCREEN_ROWS) ; i++)
+            buffer[i] = TITLE[i];
+        
+        draw();
+        
+        buttons = ~PINC;
+        if(buttons == _A && !button_down)
+        {
+            button_down = TRUE;
+            debounce = t+10;
+        }
+        
+        if (buttons != _A && button_down && debounce <= t)
+        {
+            button_down = FALSE;
+            game();
+        }
+    }
+}
+
+void game(void)
+{   
+
+    rotation=0;
+    ship_x=64;
+    ship_y=32;
+
+    ship_alive = TRUE;
+        
+    vx=0;
+    vy=0;
+
+    update_timer = 0;
+    action_timer = 0;
+    
+    for (byte i=0 ; i<MAX_ASTEROIDS ; i++)
+    {
+        asteroids[i].size=0;
+    }
+    for (byte i=0 ; i<MAX_TORPEDOS ; i++)
+    {
+        torpedos[i].size = 0;
+    }
+
+    spawn_timer = 0;
+    restart_timer = 0;
     
     word score = 0;
     
@@ -77,7 +119,7 @@ int main (void)
             {
                 click();
                 // Hyperspace
-                btn_timer = t+BTN_DELAY;
+                btn_timer = t+MOVE_DELAY;
             }
             else if(buttons & _LEFT)
             {
@@ -85,7 +127,7 @@ int main (void)
                     rotation = 15;
                 else
                     rotation -= 1;
-                btn_timer = t+BTN_DELAY;
+                btn_timer = t+MOVE_DELAY;
             }
             else if(buttons & _RIGHT)
             {
@@ -93,7 +135,7 @@ int main (void)
                     rotation = 0;
                 else
                     rotation += 1;
-                btn_timer = t+BTN_DELAY;
+                btn_timer = t+MOVE_DELAY;
             }
         }
         
@@ -135,8 +177,8 @@ int main (void)
                         torpedos[i] = (Sprite){
                             .x = ship_x+3,
                             .y = ship_y+3,
-                            .vx = x_vectors[rotation],
-                            .vy = y_vectors[rotation],
+                            .vx = x_vectors[rotation]+vx,
+                            .vy = y_vectors[rotation]+vy,
                             .size = 8,
                             .tile = 0,
                         };
@@ -402,6 +444,8 @@ int main (void)
                 d2.tile = score % 10;
                 score /= 10;
                 d3.tile = score % 10;
+                
+                restart_timer = t+3500;
             }
             
             draw_tile(&SHIP[rotation*8], &SHIP_MASKS[rotation*8], ship_x, ship_y);
@@ -412,6 +456,9 @@ int main (void)
             draw_tile(&DIGITS[d1.tile*8], &CHARACTER_MASK[0], d1.x, d1.y);
             draw_tile(&DIGITS[d2.tile*8], &CHARACTER_MASK[0], d2.x, d2.y);
             draw_tile(&DIGITS[d3.tile*8], &CHARACTER_MASK[0], d3.x, d3.y);
+            
+            if (restart_timer <= t)
+                return;
         }
         
         

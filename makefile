@@ -5,7 +5,7 @@
 
 DEVICE     = atmega1284p
 DEVDUDE    = m1284p
-#CLOCK      = 8000000
+#CLOCK      = 16000000
 PROGRAMMER = -c linuxspi -P /dev/spidev0.0
 OBJECTS    = SPIKE.o main.o     # Add more objects for each .c file here
 C_FLAGS    = -Wl,--gc-sections -Wl,--relax -ffunction-sections -fdata-sections -fno-inline-small-functions -fpack-struct -fshort-enums -mshort-calls
